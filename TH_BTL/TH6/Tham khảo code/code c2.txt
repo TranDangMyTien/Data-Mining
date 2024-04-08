@@ -1,0 +1,38 @@
+﻿import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, export_text
+from sklearn.metrics import accuracy_score
+
+# Đọc dữ liệu từ file 1-TNTHPT-XepLoai.csv
+data = pd.read_csv("/content/drive/MyDrive/Colab Notebooks/KPDL/BTH06/1-TNTHPT-XepLoai.csv")
+
+# Chọn các cột đặc trưng (điểm từng môn thi và điểm TB) và cột nhãn (Xếp loại)
+features = data[["Nguvan", "Toan", "Ngoaingu", "Mon 1", "Mon 2", "Mon 3", " TB "]]
+labels = data["Xep Loai"]
+
+# Chuyển đổi các cột dữ liệu dạng văn bản thành dạng số (phải thực hiện để huấn luyện mô hình)
+features = pd.get_dummies(features)
+
+# Tách dữ liệu thành hai tập Train và Test
+train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size=0.2, random_state=42)
+
+# Xây dựng mô hình Cây quyết định (Decision Tree)
+clf2 = DecisionTreeClassifier(max_depth=10)
+
+# Huấn luyện mô hình trên tập Train
+clf2.fit(train_features, train_labels)
+
+# Tạo biểu diễn đồ thị cho cây quyết định
+dot_data = export_graphviz(clf2, out_file=None, feature_names=list(train_features.columns),
+                           class_names=clf2.classes_, filled=True, rounded=True,
+                           special_characters=True)
+
+# Hiển thị đồ thị
+graph = graphviz.Source(dot_data)
+graph.render(filename='/content/drive/MyDrive/Colab Notebooks/KPDL/BTH06/Res/dt2', format='png', cleanup=True)
+graph.view()
+
+# Xem và nhận xét bộ luật của cây quyết định
+tree_rules = export_text(clf2, feature_names=list(features.columns))
+print("Decision Tree Rules:")
+print(tree_rules)

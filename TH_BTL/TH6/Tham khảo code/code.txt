@@ -1,0 +1,89 @@
+﻿import pandas as pd
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.tree import export_text
+from sklearn.tree import export_graphviz
+import graphviz
+
+# Đọc dữ liệu từ file data.xls
+data = pd.read_excel("/content/drive/MyDrive/Colab Notebooks/KPDL/CAC BUOI THUC HANH/BTH06/Collected_Hr_data_performances.xls")
+
+# Chọn các cột đặc trưng và cột nhãn
+features = data[["Age", "Gender", "MaritalStatus", "EducationLevel", "EducationBackground",
+                 "JobRole", "EnvironmentSatisfaction", "RelationshipSatisfaction",
+                 "WorkLifeBalance", "TotalWorkExperienceInYears", "ExperienceYearsInCurrentRole"]]
+
+labels = data["PerformanceResult"]
+
+# Chuyển đổi các cột dữ liệu dạng văn bản thành dạng số (phải thực hiện để huấn luyện mô hình)
+features = pd.get_dummies(features)
+features
+
+# Thay thế các ký tự không hợp lệ hoặc đặc biệt bằng khoảng trắng
+features.columns = features.columns.str.replace('[^a-zA-Z0-9]', ' ', regex=True)
+
+# Tách dữ liệu thành hai tập Train và Test
+train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size=0.2, random_state=42)
+
+# Xây dựng mô hình Cây quyết định (J48) và định nghĩa các giá trị tham số cần thử nghiệm
+param_grid = {
+    'criterion': ['gini', 'entropy'],
+    'splitter': ['best', 'random'],
+    'max_depth': [None, 10, 20, 30],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4]
+}
+# Tạo mô hình Cây quyết định (J48)
+clf = DecisionTreeClassifier()
+
+# Sử dụng GridSearchCV để thử nghiệm các tham số và lựa chọn mô hình tốt nhất
+grid_search = GridSearchCV(clf, param_grid, cv=5, scoring='accuracy')
+grid_search.fit(train_features, train_labels)
+
+# Lựa chọn mô hình tốt nhất sau khi thử nghiệm
+best_clf = grid_search.best_estimator_
+
+# In ra các thông số tốt nhất của mô hình
+print("Best Parameters:", grid_search.best_params_)
+print("Best Accuracy:", grid_search.best_score_)
+
+# # In các luật được học từ cây quyết định
+# tree_rules = export_text(best_clf, feature_names=list(train_features.columns))
+# print("Các luật đánh giá năng lực nhân viên:")
+# print(tree_rules)
+
+# Tạo biểu diễn đồ thị cho cây quyết định
+dot_data = export_graphviz(best_clf, out_file=None, feature_names=list(train_features.columns),
+                           class_names=best_clf.classes_, filled=True, rounded=True,
+                           special_characters=True)
+
+# Hiển thị đồ thị
+graph = graphviz.Source(dot_data)
+graph.render(filename='/content/drive/MyDrive/Colab Notebooks/KPDL/CAC BUOI THUC HANH/BTH06/Res/ds01', format='png', cleanup=True)
+graph.view()
+
+######################################
+# Dự đoán kết quả trên tập Test bằng mô hình tốt nhất đã lựa chọn
+predictions = best_clf.predict(test_features)
+
+# Đánh giá hiệu suất của mô hình tốt nhất trên tập Test
+accuracy = accuracy_score(test_labels, predictions)
+print("Accuracy on Test Set:", accuracy)
+
+# Tách dữ liệu thành hai tập Train và Test
+train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size=0.2, random_state=42)
+
+# Xây dựng mô hình Cây quyết định (REP Tree) với giới hạn độ sâu max_depth
+max_depth = 10  # Độ sâu tùy chọn, bạn có thể điều chỉnh giá trị này
+clf = DecisionTreeClassifier(max_depth=max_depth)
+
+# Huấn luyện mô hình trên tập Train
+clf.fit(train_features, train_labels)
+
+# Dự đoán kết quả trên tập Test
+predictions = clf.predict(test_features)
+
+# Đánh giá hiệu suất của mô hình trên tập Test
+accuracy = accuracy_score(test_labels, predictions)
+print("Accuracy on Test Set:", accuracy)

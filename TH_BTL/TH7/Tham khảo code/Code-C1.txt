@@ -1,0 +1,36 @@
+﻿import pandas as pd
+
+df = pd.read_csv("/content/drive/MyDrive/Colab Notebooks/KPDL/CAC BUOI THUC HANH/BTH07/bank-data.csv")
+
+df.info()
+
+# Tính toán các giá trị thống kê mô tả cho cột tuổi và thu nhập:
+print(df['age'].describe().round(2))
+print(df['income'].describe().round(2))
+
+# Vẽ 2 biểu đồ phân bố tần số của tuổi và thu nhập:
+import matplotlib.pyplot as plt
+
+plt.hist(df['age'], bins=20)
+plt.xlabel('Age')
+plt.ylabel('Frequency')
+plt.title('Age Distribution')
+
+plt.figure()
+
+plt.hist(df['income'], bins=20)
+plt.xlabel('Income')
+plt.ylabel('Frequency')
+plt.title('Income Distribution')
+
+plt.show()
+
+# Xóa cột id để ẩn danh thông tin cá nhân
+df.drop("id", axis=1, inplace=True)
+
+# Tính mode của các cột tình trạng hôn nhân và số con:
+print(df['married'].mode())
+print(df['children'].mode())
+
+# Lưu dữ liệu vào tập tin mới Bank-Data-Clustering.csv:
+df.to_csv('/content/drive/MyDrive/Colab Notebooks/KPDL/CAC BUOI THUC HANH/BTH07/Bank-Data-Clustering.csv', index=False)

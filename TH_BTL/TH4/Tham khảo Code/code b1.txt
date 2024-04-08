@@ -1,0 +1,23 @@
+﻿from numpy.lib.shape_base import column_stack
+from mlxtend.frequent_patterns import apriori
+from mlxtend.frequent_patterns import association_rules
+import pandas as pd
+
+# Đọc dữ liệu từ tập tin
+data = pd.read_csv('/content/orders.csv', sep=',')
+
+# Chuyển đổi dữ liệu thành dạng One-Hot Encoding
+data_encoded = data.drop('No', 1).applymap(lambda x: True if x == 1 else False)
+
+# Áp dụng thuật toán Apriori để tìm các luật kết hợp
+frequent_itemsets = apriori(data_encoded, min_support=0.1, use_colnames=True)
+
+# Tìm các luật kết hợp dựa trên frequent itemsets và độ tin cậy
+rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.8)
+## Có thể điều chỉnh `min_threshold` tùy vào nhu cầu! Trong khoảng 0 -> 1 tương ứng với độ tin cậy của kết quả đầu ra
+## Một giá trị ngưỡng cao sẽ tạo ra ít luật hơn nhưng có độ tin cậy cao, trong khi một giá trị ngưỡng thấp sẽ tạo ra nhiều luật hơn nhưng có độ tin cậy thấp.
+
+# Lưu ra file csv
+rules.to_excel("test_res0.8.xlsx")
+# In kết quả
+print(rules)

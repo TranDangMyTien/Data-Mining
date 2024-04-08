@@ -1,0 +1,65 @@
+﻿import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import confusion_matrix, classification_report
+
+# Đọc dữ liệu từ tập tin CSV
+data = pd.read_csv("/content/drive/MyDrive/Colab Notebooks/KPDL/DATASETS/CAC BUOI THUC HANH/BTH05/bank-data.csv")
+
+# Xóa cột "id" vì không cần thiết cho việc phân loại
+data.drop("id", axis=1, inplace=True)
+
+# Chia dữ liệu thành features (X) và nhãn (y)
+X = data.drop("pep", axis=1)
+y = data["pep"]
+
+# Chuyển đổi các cột dữ liệu dạng văn bản sang dạng số hóa
+X = pd.get_dummies(X)
+X.to_csv("demo.csv")
+
+
+# --------------------------------------------
+# a) Sử dụng KNN để phân loại
+# Chia dữ liệu thành tập huấn luyện và tập kiểm tra (test data=train data)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
+
+# Khởi tạo mô hình KNN với k=5
+knn_model = KNeighborsClassifier(n_neighbors=3)
+knn_model.fit(X_train, y_train)
+
+# Dự đoán nhãn cho tập kiểm tra
+y_pred = knn_model.predict(X_test)
+
+# Đánh giá mô hình KNN
+print("KNN Model Evaluation:")
+print(confusion_matrix(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+
+# --------------------------------------------
+
+# b) Tách bộ dữ liệu thành 2 phần
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+# Đọc dữ liệu từ tập tin CSV
+data = pd.read_csv("/content/drive/MyDrive/Colab Notebooks/KPDL/DATASETS/CAC BUOI THUC HANH/BTH05/bank-data.csv")
+
+# Chia dữ liệu thành features (X) và nhãn (y)
+X = data.drop("pep", axis=1)
+y = data["pep"]
+
+# Chia dữ liệu thành tập huấn luyện và tập kiểm tra với tỷ lệ 90% - 10% và đảm bảo tỷ lệ nhãn YES và NO
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, stratify=y, random_state=42)
+
+# Gộp features và nhãn lại thành một DataFrame cho mỗi tập tin
+train_data = pd.concat([X_train, y_train], axis=1)
+test_data = pd.concat([X_test, y_test], axis=1)
+
+# Lưu tập tin TrainData.csv
+train_data.to_csv("TrainData.csv", index=False)
+
+# Lưu tập tin TestData.csv
+test_data.to_csv("TestData.csv", index=False)
+
+print("Đã tách tập tin thành công! TrainData.csv và TestData.csv đã được tạo.")

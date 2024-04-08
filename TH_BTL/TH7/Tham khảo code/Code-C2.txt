@@ -1,0 +1,69 @@
+﻿# Đọc dữ liệu từ Bank-Data-Clustering.csv
+import pandas as pd
+
+df = pd.read_csv('/content/drive/MyDrive/Colab Notebooks/KPDL/CAC BUOI THUC HANH/BTH07/Bank-Data-Clustering.csv')
+df
+
+from sklearn.preprocessing import LabelEncoder
+
+# Các cột categorical cần convert thành dạng số
+le = LabelEncoder()
+df['sex'] = le.fit_transform(df['sex'])
+df['region'] = le.fit_transform(df['region'])
+df['married'] = le.fit_transform(df['married'])
+df['car'] = le.fit_transform(df['car'])
+df['save_act'] = le.fit_transform(df['save_act'])
+df['current_act'] = le.fit_transform(df['current_act'])
+df['mortgage'] = le.fit_transform(df['mortgage'])
+# ** Cột 'pep' là target nên không cần chuẩn hóa.
+df.to_csv('/content/drive/MyDrive/Colab Notebooks/KPDL/CAC BUOI THUC HANH/BTH07/Bank-Data-Clustering_std.csv', index=False)
+df
+
+# Tách thành 2 tập tin Train và Test, trong đó Test chứa 50 dòng cuối
+df_train = df.iloc[:-50]
+df_test = df.iloc[-50:]
+
+df_train.to_csv('/content/drive/MyDrive/Colab Notebooks/KPDL/CAC BUOI THUC HANH/BTH07/Bank-Data-Clustering-Train.csv', index=False)
+df_test.to_csv('/content/drive/MyDrive/Colab Notebooks/KPDL/CAC BUOI THUC HANH/BTH07/Bank-Data-Clustering-Test.csv', index=False)
+
+from sklearn.cluster import KMeans
+
+# Loại bỏ cột 'pep' từ cả 2 tập dữ liệu Train và Test
+X_train = df_train.drop('pep', axis=1)
+
+# Thực hiện gom cụm KMean cho tập Train với k=2, k=3, k=4
+kmeans2 = KMeans(n_clusters=2, random_state=0).fit(X_train)
+kmeans3 = KMeans(n_clusters=3, random_state=0).fit(X_train)
+kmeans4 = KMeans(n_clusters=4, random_state=0).fit(X_train)
+
+# Fit model KMeans với dữ liệu đã được chuẩn hóa:
+X_train = df_train.drop('pep', axis=1)
+
+y_pred_2 = kmeans2.predict(X_train) #k=2
+y_pred_3 = kmeans3.predict(X_train) #k=3
+y_pred_4 = kmeans4.predict(X_train) #k=4
+
+import matplotlib.pyplot as plt
+
+plt.xlabel('Age')
+plt.ylabel('Income')
+
+plt.scatter(X_train['age'], X_train['income'], c=y_pred_2)
+plt.show()
+
+plt.scatter(X_train['age'], X_train['income'], c=y_pred_3)
+plt.show()
+
+plt.scatter(X_train['age'], X_train['income'], c=y_pred_4)
+plt.show()
+
+from sklearn.metrics import confusion_matrix, classification_report
+
+le = LabelEncoder()
+df_train['pep'] = le.fit_transform(df_train['pep'])
+y_true = df_train['pep']
+
+print(confusion_matrix(y_true, y_pred_2))
+print(classification_report(y_true, y_pred_2))
+
+#Test tương tự như train

@@ -1,0 +1,41 @@
+﻿# c) Kiểm tra mô hình KNN trên tập dữ liệu mới (TestData)
+# Đọc dữ liệu từ tập tin TrainData.csv và TestData.csv
+train_data = pd.read_csv("TrainData.csv")
+test_data = pd.read_csv("TestData.csv")
+
+train_data.drop("id", axis=1, inplace=True)
+test_data.drop("id", axis=1, inplace=True)
+
+# Chia dữ liệu huấn luyện và kiểm tra thành features (X) và nhãn (y)
+X_train = train_data.drop("pep", axis=1)
+y_train = train_data["pep"]
+X_test = test_data.drop("pep", axis=1)
+
+# Chuyển đổi các cột dữ liệu dạng văn bản sang dạng số hóa
+X_train = pd.get_dummies(X_train)
+X_test = pd.get_dummies(X_test)
+
+# Khởi tạo mô hình KNN với k=5 và huấn luyện trên toàn bộ dữ liệu huấn luyện
+knn_model = KNeighborsClassifier(n_neighbors=5)
+knn_model.fit(X_train, y_train)
+print(y_test)
+# Dự đoán nhãn cho tập dữ liệu mới (TestData)
+y_pred = knn_model.predict(X_test)
+
+# In kết quả dự đoán
+print("KNN Classification Results on New Data:")
+print(y_pred)
+
+# ------------------
+# d) Sử dụng Naive-Bayes để phân loại
+# Khởi tạo mô hình Naive-Bayes
+nb_model = GaussianNB()
+nb_model.fit(X_train, y_train)
+
+# Dự đoán nhãn cho tập kiểm tra
+y_pred_nb = nb_model.predict(X_test)
+
+# Đánh giá mô hình Naive-Bayes trên tập kiểm tra
+print("Naive-Bayes Model Evaluation on Test Data:")
+print(confusion_matrix(y_test, y_pred_nb))
+print(classification_report(y_test, y_pred_nb))

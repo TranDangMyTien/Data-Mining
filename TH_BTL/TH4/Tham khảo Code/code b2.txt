@@ -1,0 +1,66 @@
+﻿## Dùng Luật kết hợp với Apriori
+import pandas as pd
+from mlxtend.preprocessing import TransactionEncoder
+from mlxtend.frequent_patterns import apriori, association_rules
+
+df = pd.read_csv("/content/drive/MyDrive/Colab Notebooks/KPDL/CAC BUOI THUC HANH/BTH04/diemthi_hcm.csv")
+
+# Lọc ra các cột cần tính toán
+df_khtn = df[["Toan", "Nguvan", "Ngoaingu", "Vatli", "Hoahoc", "Sinhhoc"]]
+
+df_khtn
+
+# Thay đổi điểm thi theo điều kiện
+df_khtn = df_khtn.applymap(lambda x: 1 if x > 8.0 else 0)
+
+print(df_khtn)
+
+# Chuyển đổi dữ liệu thành dạng One-Hot Encoding
+data_encoded = df_khtn.applymap(lambda x: True if x == 1 else False)
+
+# Áp dụng thuật toán Apriori để tìm các luật kết hợp
+frequent_itemsets = apriori(data_encoded, min_support=0.1, use_colnames=True)
+
+# Tìm các luật kết hợp dựa trên frequent itemsets và độ tin cậy
+rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.1)
+
+print(rules)
+
+rules.to_excel("demo.xlsx")
+
+
+
+
+
+## Dùng luật kết hợp với FP Growth
+
+import pandas as pd
+from mlxtend.preprocessing import TransactionEncoder
+import pyfpgrowth
+
+df = pd.read_csv("/content/drive/MyDrive/Colab Notebooks/KPDL/CAC BUOI THUC HANH/BTH04/diemthi_hcm.csv")
+# Lọc ra các cột cần tính toán
+df_khtn = df[["Toan", "Nguvan", "Ngoaingu", "Vatli", "Hoahoc", "Sinhhoc"]]
+
+df_khtn
+
+# Convert DataFrame to transactional format
+transactions = df_khtn.apply(lambda row: [col for col, val in row.items() if val > 8], axis=1).tolist()
+
+# Apply FP-Growth algorithm to find frequent itemsets
+patterns = pyfpgrowth.find_frequent_patterns(transactions, 0.1)
+
+# Generate association rules from frequent itemsets
+rules = pyfpgrowth.generate_association_rules(patterns, 0.5)
+
+# Print the discovered rules
+for rule, support in rules.items():
+    antecedent = ', '.join(rule)
+    consequent = ', '.join(rules[rule][0])
+    confidence = rules[rule][1]
+    print(f"Rule: {antecedent} -> {consequent}")
+    print(f"Support: {support}")
+    print(f"Confidence: {confidence}")
+    print()
+
+# Nếu một sinh viên đạt điểm cao trong các môn <antecedance>, thì có khả năng cao sinh viên đó cũng đạt điểm cao trong môn <consequence>.
